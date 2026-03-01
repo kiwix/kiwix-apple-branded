@@ -16,5 +16,6 @@
   "settings_show_external_link_option": true,
   "settings_show_search_snippet": false,
   "uses_audio": false,
-  "zim_url": "https://mirror.download.kiwix.org/zim/phet/phet_mul_all_2025-06.zim"
+  "zim_recipe": "https://farm.openzim.org/recipes/phet_mul_all",
+  "zim_url": "https://mirror.download.kiwix.org/zim/phet/phet_mul_all_2026-02.zim"
 }
