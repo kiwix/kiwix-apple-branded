@@ -29,21 +29,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          path: custom
+          path: branded
           fetch-depth: 0
 
-      - name: Install Python dependencies for custom project generation
+      - name: Install Python dependencies for branded project generation
         run: |
           python -m pip install pyyaml
           python -m pip install requests
 
       - name: Get changed info.json files and validate them
-        working-directory: custom
+        working-directory: branded
         run: |
           git diff origin/main --name-only | grep info\\.json | xargs python src/validate_info_json.py $1
 
       - name: Test python scripts
-        working-directory: custom
+        working-directory: branded
         run: PYTHONPATH=src python -m unittest discover -s tests
 
       - name: Set test tag variable as an output
@@ -51,7 +51,7 @@ jobs:
         run: echo "tag=testapp_2023.12.1" >> $GITHUB_OUTPUT
 
       - name: Validate and parse the tag
-        working-directory: custom
+        working-directory: branded
         run: python src/tag_validator.py ${{ steps.vars.outputs.tag }}
 
       - name: Check-out kiwix/kiwix-apple
@@ -75,22 +75,22 @@ jobs:
           HTTP_BASIC_ACCESS_AUTHENTICATION: ${{ secrets.HTTP_BASIC_ACCESS_AUTHENTICATION }}
         run:
           |
-          # move the custom files under the same folder as the kiwix repo
-          mv custom/ apple/
-          cd apple/custom
+          # move the branded files under the same folder as the kiwix repo
+          mv branded/ apple/
+          cd apple/branded
 
-          # make a custom copy of the Info.plist file
-          cp ../Support/Info.plist Custom.plist
+          # make a branded copy of the Info.plist file
+          cp ../Support/Info.plist Branded.plist
 
           python src/tag_validator.py ${{ steps.vars.outputs.tag }}
           python src/generate_and_download.py
 
-          # move the custom project file to the main folder
-          mv custom_project.yml ../
+          # move the branded project file to the main folder
+          mv branded_project.yml ../
           cd ..
 
-          # run xcodegen on our custom project
-          xcodegen -s custom_project.yml
+          # run xcodegen on our branded project
+          xcodegen -s branded_project.yml
           ls -la
 
 
@@ -99,10 +99,10 @@ jobs:
           # move the checked out github actions to root folder:
           mv apple/.github/ .
 
-          BRAND=$(<./apple/custom/.brand_name)
+          BRAND=$(<./apple/branded/.brand_name)
           echo "BRAND=$BRAND" >> $GITHUB_ENV
 
-          VERSION=$(<./apple/custom/.version_number)
+          VERSION=$(<./apple/branded/.version_number)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       # taken from: kiwix/kiwix-apple .github/workflows/cd.yml
@@ -150,12 +150,12 @@ jobs:
         with:
           action: archive
           xc-destination: generic/platform=${{ matrix.destination.platform }}
-          # custom app specific
+          # branded app specific
           version: ${{ env.VERSION }}
           XC_SCHEME: ${{ env.BRAND }}
           DOWNLOAD_DEPENDENCIES: false
           XC_WORKSPACE: apple/Kiwix.xcodeproj/project.xcworkspace/
-          # eof custom app specific
+          # eof branded app specific
           APPLE_DEVELOPMENT_SIGNING_CERTIFICATE: ${{ secrets.APPLE_DEVELOPMENT_SIGNING_CERTIFICATE }}
           APPLE_DEVELOPMENT_SIGNING_P12_PASSWORD: ${{ secrets.APPLE_DEVELOPMENT_SIGNING_P12_PASSWORD }}
           DEPLOYMENT_SIGNING_CERTIFICATE: ${{ env.SIGNING_CERTIFICATE }}

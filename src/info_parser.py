@@ -20,11 +20,11 @@ JSON_KEY_ENFORCED_LANGUAGE = "enforced_lang"
 JSON_KEY_DEVELOPMENT_TEAM = "development_team"
 JSON_KEY_KIWIX_APPLE_REVISION = "kiwix_apple_revision"
 JSON_KEY_USES_AUDIO = "uses_audio"
-CUSTOM_ZIM_FILE_KEY = "CUSTOM_ZIM_FILE"
+BRANDED_ZIM_FILE_KEY = "BRANDED_ZIM_FILE"
 JSON_TO_PLIST_MAPPING = {
     "app_store_id": "APP_STORE_ID",
-    "about_app_url": "CUSTOM_ABOUT_WEBSITE",
-    "about_text": "CUSTOM_ABOUT_TEXT",
+    "about_app_url": "BRANDED_ABOUT_WEBSITE",
+    "about_text": "BRANDED_ABOUT_TEXT",
     "settings_default_external_link_to": "SETTINGS_DEFAULT_EXTERNAL_LINK_TO",
     "settings_show_search_snippet": "SETTINGS_SHOW_SEARCH_SNIPPET",
     "disable_immersive_reading": "DISABLE_IMMERSIVE_READING",
@@ -65,14 +65,14 @@ class InfoParser:
             if self.uses_audio == False:
                 plist[PLIST_KEY_BACKGROUND_MODES].remove("audio")
 
-            # remove live activity for custom apps:
+            # remove live activity for branded apps:
             plist.pop(PLIST_KEY_LIVE_ACTIVITY, None)
             plist.pop(PLIST_KEY_LIVE_ACTIVITY_FREQUENT, None)
-            # replace plist values according to custom json:
+            # replace plist values according to branded json:
             for keyValues in self._plist_key_values():
                 for key in keyValues:
                     plist[key] = keyValues[key]
-            plist[CUSTOM_ZIM_FILE_KEY] = self.zim_file_name
+            plist[BRANDED_ZIM_FILE_KEY] = self.zim_file_name
             out_path = self._info_plist_path()
             out_path.parent.mkdir(parents=True, exist_ok=True)
             with out_path.open(mode="wb") as out_file:
@@ -85,7 +85,7 @@ class InfoParser:
                 "MARKETING_VERSION": self.version.semantic,
                 "CURRENT_PROJECT_VERSION": float(datetime.now().strftime("%Y%m%d.%H%M")),
                 "PRODUCT_BUNDLE_IDENTIFIER": self._bundle_id(),
-                "INFOPLIST_FILE": f"custom/{self._info_plist_path()}",
+                "INFOPLIST_FILE": f"branded/{self._info_plist_path()}",
                 "INFOPLIST_KEY_CFBundleDisplayName": self._app_name(),
                 "INFOPLIST_KEY_UILaunchStoryboardName": "SplashScreen.storyboard",
                 "DEVELOPMENT_LANGUAGE": self._dev_language(),
@@ -100,8 +100,8 @@ class InfoParser:
             }
             },
             "sources": [
-                {"path": f"custom/{self.brand_name}"},
-                {"path": "custom/SplashScreen.storyboard",
+                {"path": f"branded/{self.brand_name}"},
+                {"path": "branded/SplashScreen.storyboard",
                  "destinationFilters": ["iOS"]
                  },
                 {"path": "Support",
@@ -132,7 +132,7 @@ class InfoParser:
         if JSON_BUNDLE_ID in self.data:
             return self.data[JSON_BUNDLE_ID]
         else:
-            return f"org.kiwix.custom.{self.brand_name}"
+            return f"org.kiwix.branded.{self.brand_name}"
 
     def _info_plist_path(self):
         return Path()/self.brand_name/f"{self.brand_name}.plist"
@@ -181,9 +181,9 @@ class InfoParser:
         if enforced == None:
             return ["**/qqq.lproj"]
         else:
-            # Copy the enforced lang to the custom folder
+            # Copy the enforced lang to the branded folder
             for lang_file in Path().cwd().parent.rglob(f'{enforced}.lproj'):
                 shutil.copytree(
-                    lang_file, Path().cwd().parent/"custom"/self.brand_name, dirs_exist_ok=True)
+                    lang_file, Path().cwd().parent/"branded"/self.brand_name, dirs_exist_ok=True)
             # exclude all other languages under Support/*.lproj
             return ["**/*.lproj"]

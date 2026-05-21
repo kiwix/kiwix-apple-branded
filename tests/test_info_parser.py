@@ -12,12 +12,12 @@ class InfoParserTest(unittest.TestCase):
 
     def test_json_to_project_yml(self):
         project = self.parser.as_project_yml()
-        print("custom_project.yml targets:")
+        print("branded_project.yml targets:")
         print(yaml.dump(project))
 
     def test_info_plist_path(self):
-        custom_info = self.parser._info_plist_path()
-        self.assertEqual(custom_info, Path("tests")/"tests.plist")
+        branded_info = self.parser._info_plist_path()
+        self.assertEqual(branded_info, Path("tests")/"tests.plist")
 
     def test_file_name_from_url(self):
         url = "https://www.dwds.de/kiwix/f/dwds_de_dictionary_nopic_2023-11-20.zim"

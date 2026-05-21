@@ -1,4 +1,4 @@
-name: Publish Custom App
+name: Publish Branded App
 
 on:
   release:
@@ -27,7 +27,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          path: custom
+          path: branded
 
       - name: Set tag variable as an output
         id: vars
@@ -36,7 +36,7 @@ jobs:
       - name: Validate tag
         run:
           |
-          cd custom
+          cd branded
           python src/tag_validator.py ${{ steps.vars.outputs.tag }}
           cd ..
 
@@ -44,7 +44,7 @@ jobs:
         id: kiwix_apple_repo
         run:
           # kiwix_apple_revision comes from the tag_validator.py
-          REVISION=$(<./apple/custom/.kiwix_apple_revision)
+          REVISION=$(<./apple/branded/.kiwix_apple_revision)
           echo "reference=$REVISION" >> $GITHUB_OUTPUT
 
       - name: Check-out kiwix/kiwix-apple
@@ -54,7 +54,7 @@ jobs:
           path: apple
           ref: ${{ steps.kiwix_apple_repo.outputs.reference || '' }}
 
-      - name: Install Python dependencies for custom project generation
+      - name: Install Python dependencies for branded project generation
         run: python -m pip install pyyaml
 
       - name: Install Kiwix dependencies
@@ -73,22 +73,22 @@ jobs:
           HTTP_BASIC_ACCESS_AUTHENTICATION: ${{ secrets.HTTP_BASIC_ACCESS_AUTHENTICATION }}
         run:
           |
-          # move the custom files under the same folder as the kiwix repo
-          mv custom/ apple/
-          cd apple/custom
+          # move the branded files under the same folder as the kiwix repo
+          mv branded/ apple/
+          cd apple/branded
 
-          # make a custom copy of the Info.plist file
-          cp ../Support/Info.plist Custom.plist
+          # make a branded copy of the Info.plist file
+          cp ../Support/Info.plist Branded.plist
 
           python src/tag_validator.py ${{ steps.vars.outputs.tag }}
           python src/generate_and_download.py
 
-          # move the custom project file to the main folder
-          mv custom_project.yml ../
+          # move the branded project file to the main folder
+          mv branded_project.yml ../
           cd ..
 
-          # run xcodegen on our custom project
-          xcodegen -s custom_project.yml
+          # run xcodegen on our branded project
+          xcodegen -s branded_project.yml
 
           ls -la
 
@@ -102,15 +102,15 @@ jobs:
           # and are created by: src/tag_validator.py
 
           # brand_name comes from the valid tag
-          BRAND=$(<./apple/custom/.brand_name)
+          BRAND=$(<./apple/branded/.brand_name)
           echo "BRAND=$BRAND" >> $GITHUB_ENV
 
           # version comes from the tag
-          VERSION=$(<./apple/custom/.version_number)
+          VERSION=$(<./apple/branded/.version_number)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
           # team_id comes from the brand's json file
-          TEAM_ID=$(<./apple/custom/.team_id)
+          TEAM_ID=$(<./apple/branded/.team_id)
           echo "TEAM_ID=$TEAM_ID" >> $GITHUB_ENV
 
       # taken from: kiwix/kiwix-apple .github/workflows/cd.yml
@@ -156,12 +156,12 @@ jobs:
         with:
           action: archive
           xc-destination: generic/platform=${{ matrix.destination.platform }}
-          # custom app specific
+          # branded app specific
           version: ${{ env.VERSION }}
           XC_SCHEME: ${{ env.BRAND }}
           DOWNLOAD_DEPENDENCIES: false
           XC_WORKSPACE: apple/Kiwix.xcodeproj/project.xcworkspace/
-          # eof custom app specific
+          # eof branded app specific
           APPLE_DEVELOPMENT_SIGNING_CERTIFICATE: ${{ secrets.APPLE_DEVELOPMENT_SIGNING_CERTIFICATE }}
           APPLE_DEVELOPMENT_SIGNING_P12_PASSWORD: ${{ secrets.APPLE_DEVELOPMENT_SIGNING_P12_PASSWORD }}
           DEPLOYMENT_SIGNING_CERTIFICATE: ${{ env.SIGNING_CERTIFICATE }}
