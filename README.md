@@ -1,33 +1,33 @@
-# Kiwix Apple Custom Apps
+# Kiwix Apple Branded Apps
 
-Kiwix Apple custom apps are iOS/macOS apps running [Kiwix for
+Kiwix Apple branded apps are iOS/macOS apps running [Kiwix for
 Apple](https://github.com/kiwix/kiwix-apple) against a
 pre-configured ZIM file.
 
 This project contains the data and scripts required to create specific
- custom Kiwix Apple apps.
+ branded Kiwix Apple apps.
 
-[![CodeFactor](https://www.codefactor.io/repository/github/kiwix/kiwix-apple-custom/badge)](https://www.codefactor.io/repository/github/kiwix/kiwix-apple-custom)
-[![CI Build Status](https://github.com/kiwix/kiwix-apple-custom/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kiwix/kiwix-apple-custom/actions/workflows/ci.yml)
-[![CD Build Status](https://github.com/kiwix/kiwix-apple-custom/actions/workflows/cd.yml/badge.svg?branch=main)](https://github.com/kiwix/kiwix-apple-custom/actions/workflows/cd.yml)
+[![CodeFactor](https://www.codefactor.io/repository/github/kiwix/kiwix-apple-branded/badge)](https://www.codefactor.io/repository/github/kiwix/kiwix-apple-branded)
+[![CI Build Status](https://github.com/kiwix/kiwix-apple-branded/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kiwix/kiwix-apple-branded/actions/workflows/ci.yml)
+[![CD Build Status](https://github.com/kiwix/kiwix-apple-branded/actions/workflows/cd.yml/badge.svg?branch=main)](https://github.com/kiwix/kiwix-apple-branded/actions/workflows/cd.yml)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-## Custom app folder
+## Branded app folder
 
-[In the repository](https://github.com/kiwix/kiwix-apple-custom),
-each custom configuration is isolated in a so called custom app
-folder. If you need to create a new one for a new custom app, please use a folder name
+[In the repository](https://github.com/kiwix/kiwix-apple-branded),
+each branded configuration is isolated in a so called branded app
+folder. If you need to create a new one for a new branded app, please use a folder name
 that is lowercased and contains no space.
 
 ## `info.json` file
 
-The configuration of the custom app is handled using the `info.json`
-file which **is required to be placed in the custom app folder**. Take example on an already
-existing one if you need to create a new custom app.
+The configuration of the branded app is handled using the `info.json`
+file which **is required to be placed in the branded app folder**. Take example on an already
+existing one if you need to create a new branded app.
 
 ### The required fields are:
 - `about_app_url` - this is an external link that is placed in the "About section" of the application. (Eg. "https://www.dwds.de")
-- `about_text` - this is a custom text that is placed in the "About section" describing what the application is about. It is not supporting html tags, but new lines can be added with '\n'.
+- `about_text` - this is a branded text that is placed in the "About section" describing what the application is about. It is not supporting html tags, but new lines can be added with '\n'.
 - `app_name` - Name of the app, as it will appear on device under the icon (the [CFBundleDisplayName](https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundledisplayname)). Additionally it will be used as the projects $(PRODUCT_NAME) variable. This makes sure that the app_name appears on macOS in the about section, in the top menu bar.
 - `app_store_id` - this should to be taken from the developer.apple.com, where the application release is prepared. Note you can use the app_store_id even if the app is not yet released. You can find this by visiting: https://appstoreconnect.apple.com/apps/, selecting your app, and go to General tab (on the left), and it will be under AppleID. The id is used within the app in the "Rate the app" section, so users can be redirected to a specific app in the App Store, to rate it. it is a sequence of numbers usually, although for the json file we need to append "id" to it. Eg.: "1281693200" becomes "id1281693200".
 - `development_team` - this is the development team id used for the build, it can be found in the relevant Apple Development Account (for apps under the Kiwix organisation it will be the same value: L7HWM3SP3L). You can find your team id in the upper right corner of the screen (after you login to) your [Apple Developer Account](https://developer.apple.com/account/resources/certificates/list).
@@ -41,18 +41,18 @@ existing one if you need to create a new custom app.
     - **"alwaysAsk"**: it will ask the user in a pop-up, before opening any external links
     - **"neverLoad"**: it won't ask the user, and won't open any external links. This is handy  if the external links handling is already contained in the zimfile itself, and we don't want to trigger any system level behaviour.
 - `settings_show_external_link_option` - **true/false** in the app settings, the user is allowed to change the external link handling behaviour. If we want to restrict that and remove this option from the settings UI (so that the user cannot change the value), we can do that  by setting this value to false.
-- `settings_show_search_snippet` - in most cases this should be **false** for a custom app. This removes the snippet from the search, which is used to filter the search results by ZIM files in the Kiwix app. Since custom apps come with a single ZIM file, this filter is not needed.
-- `uses_audio` - (true | false) this will enable or disable the [UIBackgroundModes](https://developer.apple.com/documentation/bundleresources/information-property-list/uibackgroundmodes) audio property in the final .plist file. Please note if the custom app is not using any media playback, it's recommended to turn this off, otherwise the release build might be rejected by Apple with: "The app declares support for audio in the UIBackgroundModes key in your Info.plist but we are unable to locate any features that require persistent audio."
-- `zim_url` - this **is required** for a custom app, without this, it is not a custom app at all. This is used in a download step to create the custom app, and then bundled into the app itself. The **filename must end with the date format: YYYY-MM-DD.zim or with: YYYY-MM.zim**, as the version of the app is dictated by this. See more on that in the "Versioning and creating the app" section below.
+- `settings_show_search_snippet` - in most cases this should be **false** for a branded app. This removes the snippet from the search, which is used to filter the search results by ZIM files in the Kiwix app. Since branded apps come with a single ZIM file, this filter is not needed.
+- `uses_audio` - (true | false) this will enable or disable the [UIBackgroundModes](https://developer.apple.com/documentation/bundleresources/information-property-list/uibackgroundmodes) audio property in the final .plist file. Please note if the branded app is not using any media playback, it's recommended to turn this off, otherwise the release build might be rejected by Apple with: "The app declares support for audio in the UIBackgroundModes key in your Info.plist but we are unable to locate any features that require persistent audio."
+- `zim_url` - this **is required** for a branded app, without this, it is not a branded app at all. This is used in a download step to create the branded app, and then bundled into the app itself. The **filename must end with the date format: YYYY-MM-DD.zim or with: YYYY-MM.zim**, as the version of the app is dictated by this. See more on that in the "Versioning and creating the app" section below.
 If your download requires standard http authentication, see `zim_auth`.
 
-    Note: If you see the standard Kiwix like start page after compiling and running your custom app, that's an indication that this value is either missing, or there's something wrong with the zimfile itself.
+    Note: If you see the standard Kiwix like start page after compiling and running your branded app, that's an indication that this value is either missing, or there's something wrong with the zimfile itself.
 
 ### Optional fields
 
 These key / values can be, but do not need to be included in the `info.json` file:
 
-- `bundle_id` - (optional) It should match to the bundle id set on the Apple Developer website for this app. If it's not set it will default to: "org.kiwix.custom.{brand_name}", where the brand name is the name of the folder, eg: "org.kiwix.custom.dwds".
+- `bundle_id` - (optional) It should match to the bundle id set on the Apple Developer website for this app. If it's not set it will default to: "org.kiwix.branded.{brand_name}", where the brand name is the name of the folder, eg: "org.kiwix.branded.dwds".
 
 - `disable_immersive_reading` - optional (true| false) - if set to true, it will disable the immersive reading functionality on iOS, which is hiding the top / bottom nav bars while scrolling the web content. If the ZIM content is specific to a full screen experience (eg: PhET) it might be better to turn this feature off, so that the user navigation is not blocked (eg navigating back, search, bookmarks ect).
 
@@ -74,8 +74,8 @@ These key / values can be, but do not need to be included in the `info.json` fil
 
 ## XCAssets file
 
-Custom app needs a set of images and icons to build properly.
-The **filename itself should be named exactly as the custom folder it is in**: Eg: `dwds/dwds.xcassets`
+Branded app needs a set of images and icons to build properly.
+The **filename itself should be named exactly as the branded folder it is in**: Eg: `dwds/dwds.xcassets`
 Currently there's no automated way to do this, you can copy an existing set to your folder, rename it and edit the contents in [Xcode](https://developer.apple.com/xcode/):
 ```
 mkdir wikimed
@@ -83,13 +83,13 @@ cp -r dwds/dwds.xcassets wikimed/wikimed.xcassets
 xed wikimed/wikimed.xcassets
 ```
 
-These are mostly images and json files underneath, so theoretically they could be edited/replaced without Xcode as well, but the **final results should be verified within the built custom app itself**.
+These are mostly images and json files underneath, so theoretically they could be edited/replaced without Xcode as well, but the **final results should be verified within the built branded app itself**.
 
 # Versioning and releasing
 
 **In short: the app version is dictated by Github release tags.**
 
-The release process ensures a systematic and clear versioning and releasing workflow for custom apps. You need to use GitHub release tags to trigger TestFlight uploads. The automated process guarantees compliance with [our versioning rules](https://github.com/kiwix/kiwix-apple/issues/559) and [Apple's versioning guidelines](https://developer.apple.com/documentation/bundleresources/information_property_list/cfbundleshortversionstring).
+The release process ensures a systematic and clear versioning and releasing workflow for branded apps. You need to use GitHub release tags to trigger TestFlight uploads. The automated process guarantees compliance with [our versioning rules](https://github.com/kiwix/kiwix-apple/issues/559) and [Apple's versioning guidelines](https://developer.apple.com/documentation/bundleresources/information_property_list/cfbundleshortversionstring).
 
 The app version must be in the format: `YYYY.MM.build_version` [More on this process here](https://github.com/kiwix/kiwix-apple/issues/559), this version will be visible in the App Store.
 

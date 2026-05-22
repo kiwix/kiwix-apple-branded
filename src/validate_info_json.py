@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Validate the custom app json files passed in as an argument
+"""Validate the branded app json files passed in as an argument
 Making sure we are using https for ZIM the file,
 and that it is downloadable
 """
@@ -14,7 +14,7 @@ import requests
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Validator for custom apps info.json file")
+        description="Validator for branded apps info.json file")
     parser.add_argument(
         "info_jsons",
         help="The info.json files to be verified",

@@ -62,7 +62,7 @@ def _exit_with_error(msg):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="A github tag validator for custom apps")
+        description="A github tag validator for branded apps")
     parser.add_argument(
         "tag",
         help="The github tag to be verified",

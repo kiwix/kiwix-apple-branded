@@ -7,7 +7,7 @@ import yaml
 
 INFO_JSON = 'info.json'
 
-class CustomApps:
+class BrandedApps:
 
     def __init__(self, brands=["all"], build_number=None):
         self.build_number = build_number
@@ -19,9 +19,9 @@ class CustomApps:
                 brand = Brand(brand_name)
                 self.info_files.append(brand.info_file)
 
-    def create_custom_project_file(self, path):
+    def create_branded_project_file(self, path):
         """Create the project file based on the main repo project.yml
-        It will contain the targets we need for each custom app, and their build settings,
+        It will contain the targets we need for each branded app, and their build settings,
         pointing to their individual info.plist files
 
         Args:
@@ -37,16 +37,16 @@ class CustomApps:
         with open(path, "w") as file:
             yaml.dump(dict, file)
 
-    def create_plists(self, custom_plist):
+    def create_plists(self, branded_plist):
         """Generate the plist files for each brand
 
         Args:
-            custom_plist (Path): the path to the original plist file we are basing this of,
+            branded_plist (Path): the path to the original plist file we are basing this of,
             it should be a copy from the Kiwix target
         """
         for info in self.info_files:
             parser = InfoParser(info, build_number=self.build_number)
-            parser.create_plist(based_on_plist_file=custom_plist)
+            parser.create_plist(based_on_plist_file=branded_plist)
 
     def download_zim_files(self):
         """Download all the zim files that were declared in the info.json files
