@@ -21,11 +21,11 @@ jobs:
           - platform: macOS
           - platform: iOS
             xcode_extra: -sdk iphoneos
-    runs-on: macos-15
+    runs-on: macos-26
     environment: ${{ contains(github.ref, 'dwds') && 'dwds' || 'internal' }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: branded
 
@@ -48,7 +48,7 @@ jobs:
           echo "reference=$REVISION" >> $GITHUB_OUTPUT
 
       - name: Check-out kiwix/kiwix-apple
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: kiwix/kiwix-apple
           path: apple

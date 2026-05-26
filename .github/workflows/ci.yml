@@ -24,10 +24,10 @@ jobs:
           - platform: macOS
           - platform: iOS
             xcode_extra: -sdk iphoneos
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: branded
           fetch-depth: 0
@@ -55,7 +55,7 @@ jobs:
         run: python src/tag_validator.py ${{ steps.vars.outputs.tag }}
 
       - name: Check-out kiwix/kiwix-apple
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: kiwix/kiwix-apple
           path: apple
