@@ -10,9 +10,11 @@ from pathlib import Path
 
 
 def _is_valid(tag):
-    # Regex verify the tag format: folder_YYYY.MM.buildNr(_extra)
+    # Regex verify the tag format: folder_YYYY.MM[a-z]{0,2}.buildNr(_extra)
     pattern = re.compile(
-        r'^(?P<brand_name>\w+)_(?P<year>\d{4})\.(?P<month>\d{1,2})\.(?P<build_number>\d+)(?:_(?P<extra_tag>\w+))?$'
+        r'^(?P<brand_name>\w+)_(?P<year>\d{4})\.(?P<month>\d{1,2})'
+        r'(?P<suffix>[a-z]{0,2})\.(?P<build_number>\d+)'
+        r'(?:_(?P<extra_tag>\w+))?$'
     )
     match = pattern.match(tag)
 
@@ -21,6 +23,7 @@ def _is_valid(tag):
         brand_name = groups.get('brand_name')
         year = int(groups.get('year'))
         month = int(groups.get('month'))
+        suffix = groups.get('suffix') or ''
         build_number = int(groups.get('build_number'))
         
         try:
@@ -30,14 +33,19 @@ def _is_valid(tag):
             
         try:
             version = Version(
-                year=year, month=month, build_number=build_number
+                year=year, month=month, build_number=build_number,
+                suffix=suffix
             )
         except ValueError as e:
             _exit_with_error(f"Invalid tag {tag}: {e}")
             
         parser = InfoParser(json_path=brand.info_file, build_number=version.build_number)
         if parser.version != version:
-            _exit_with_error(f"Invalid date in tag: {tag}, does not match year.month of ZIM file in {brand.info_file}, it should be: {parser.version.semantic}")
+            expected = f"{parser.version.date_token}.{parser.version.build_number}"
+            _exit_with_error(
+                f"Invalid date in tag: {tag}, does not match the date of the "
+                f"ZIM file in {brand.info_file}, it should be: {expected}"
+            )
         
         # save the specific parts of the tag as temp files:
         Path('.brand_name').write_text(f"{brand.name}")

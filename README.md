@@ -95,11 +95,11 @@ The app version must be in the format: `YYYY.MM.build_version` [More on this pro
 
 Each release is tied to a Github release tag. The tag can be defined when creating the release. The name of the tag is going to determine which app we want to release, and what the final version of that app will be.
 The tag naming must follow the format:
-`{brand_name}_YYYY.MM.{build_number}(_optional-part)`, eg: `dwds_2023.12.9` or `wikimed_2023.12.88_test`)
+`{brand_name}_YYYY.MM[suffix].{build_number}(_optional-part)`, eg: `dwds_2023.12.9`, `wikimed_2023.12.88_test` or `phet_2026.02a.0`)
 
 Where the:
 - `brand_name` is the name of the brand, an existing folder in the repository (eg: "dwds", or "wikimed"). It needs to be lowercase and the folder must exist and must contain an `info.json` file. It is validated, and in case of a mistake the release process will stop with an invalid tag error.
-- `YYYY.MM` is a date matching the ZIM file's date in the `info.json` file defined under `zim_url`. See above. It is also validated, and in case of a mistake the process will stop with an invalid tag error.
+- `YYYY.MM` is a date matching the ZIM file's date in the `info.json` file defined under `zim_url`. See above. It may be followed by one or two lowercase letters (`a`, `b`, ..., `ab`, ...) when several ZIM files are produced for the same month, matching the ZIM filename (eg. `2026-02a.zim` uses `2026.02a`). The suffix is only part of the tag: it is **not** included in the App Store version, which stays `YYYY.MM.build_number`. It is validated, and in case of a mistake the process will stop with an invalid tag error.
 - `build_number` - it must be a non-negative integer (0 and above), incrementing for the same ZIM file, eg: `dwds_2023.12.9` => `dwds_2023.12.10` This allows to create different app versions with the same ZIM file. If a new ZIM file is used (compared to former version, or it's the first release of a new app), it should be `0`, eg: `dwds_2027.01.0` or `brandnewapp_2024.10.0`.
 - `optional-part` - any value can be added here, it is only indicative, eg for different attempts to release the same app version, such as in the case of a failed build restart, eg: `dwds_2023.12.90_testing01`, `dwds_2023.12.90_testing02`. The value of the optional part is ignored in the build process, it is only an indicator, we can use to distinguish between attempts to release the very same version of an app.
 

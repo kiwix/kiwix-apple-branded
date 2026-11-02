@@ -20,3 +20,4 @@ pyvenv.cfg
 pixi.lock
 pixi.toml
 .pixi
+.venv
