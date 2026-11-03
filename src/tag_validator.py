@@ -12,7 +12,7 @@ from pathlib import Path
 def _is_valid(tag):
     # Regex verify the tag format: folder_YYYY.MM.buildNr(_extra)
     pattern = re.compile(
-        r'^(?P<brand_name>\w+)_(?P<year>\d{4})\.(?P<month>\d{1,2})\.(?P<build_number>\d+)(?:_(?P<extra_tag>\w+))?$'
+        r'^(?P<brand_name>\w+)_(?P<year>\d{4})\.(?P<month>\d{2})\.(?P<build_number>\d+)(?:_(?P<extra_tag>\w+))?$'
     )
     match = pattern.match(tag)
 

@@ -20,7 +20,7 @@ class Version:
 
     @classmethod
     def from_file_name(self, file_name: str, build_number: int):
-        p = re.compile('(?P<year>\d{4})-(?P<month>\d{1,2})')
+        p = re.compile(r'(?P<year>\d{4})-(?P<month>\d{2})')
         m = p.search(file_name)
         return Version(year=int(m.group('year')),
                        month=int(m.group('month')),

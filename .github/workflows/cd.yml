@@ -3,8 +3,6 @@ name: Publish Branded App
 on:
   release:
     types: [published]
-    branches:
-      - main
 
 # taken from: kiwix/kiwix-apple .github/workflows/cd.yml
 env:
@@ -12,8 +10,43 @@ env:
   KEYCHAIN_PASSWORD: mysecretpassword
   APPLE_STORE_AUTH_KEY_PATH: /tmp/authkey.p8
 
+permissions:
+  contents: read
+
 jobs:
+  prepare:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    outputs:
+      brand: ${{ steps.tag.outputs.brand }}
+      version: ${{ steps.tag.outputs.version }}
+      build_number: ${{ steps.tag.outputs.build_number }}
+      team_id: ${{ steps.tag.outputs.team_id }}
+      revision: ${{ steps.tag.outputs.revision }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          path: branded
+
+      - name: Validate tag and read app configuration
+        id: tag
+        working-directory: branded
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          if ! python3 src/tag_validator.py "$tag"; then
+            echo "::error::Invalid release tag '$tag'"
+            exit 1
+          fi
+          echo "brand=$(cat .brand_name)" >> "$GITHUB_OUTPUT"
+          echo "version=$(cat .version_number)" >> "$GITHUB_OUTPUT"
+          echo "build_number=$(cat .build_number)" >> "$GITHUB_OUTPUT"
+          echo "team_id=$(cat .team_id)" >> "$GITHUB_OUTPUT"
+          echo "revision=$(cat .kiwix_apple_revision)" >> "$GITHUB_OUTPUT"
+
   generate_build_deploy:
+    needs: prepare
     strategy:
       fail-fast: false
       matrix:
@@ -23,36 +56,25 @@ jobs:
             xcode_extra: -sdk iphoneos
     runs-on: macos-26
     environment: ${{ contains(github.ref, 'dwds') && 'dwds' || 'internal' }}
+    permissions:
+      contents: read
+    env:
+      BRAND: ${{ needs.prepare.outputs.brand }}
+      VERSION: ${{ needs.prepare.outputs.version }}
+      BUILD_NUMBER: ${{ needs.prepare.outputs.build_number }}
+      TEAM_ID: ${{ needs.prepare.outputs.team_id }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           path: branded
 
-      - name: Set tag variable as an output
-        id: vars
-        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
-
-      - name: Validate tag
-        run:
-          |
-          cd branded
-          python src/tag_validator.py ${{ steps.vars.outputs.tag }}
-          cd ..
-
-      - name: Use the main branch latest commit of kiwix-apple, unless the json file indicates a specific commit SHA
-        id: kiwix_apple_repo
-        run:
-          # kiwix_apple_revision comes from the tag_validator.py
-          REVISION=$(<./apple/branded/.kiwix_apple_revision)
-          echo "reference=$REVISION" >> $GITHUB_OUTPUT
-
       - name: Check-out kiwix/kiwix-apple
         uses: actions/checkout@v6
         with:
           repository: kiwix/kiwix-apple
           path: apple
-          ref: ${{ steps.kiwix_apple_repo.outputs.reference || '' }}
+          ref: ${{ needs.prepare.outputs.revision || '' }}
 
       - name: Install Python dependencies for branded project generation
         run: python -m pip install pyyaml
@@ -77,10 +99,14 @@ jobs:
           mv branded/ apple/
           cd apple/branded
 
+          # write the values validated by the prepare job where the
+          # generation script expects them
+          printf '%s' "$BRAND" > .brand_name
+          printf '%s' "$BUILD_NUMBER" > .build_number
+
           # make a branded copy of the Info.plist file
           cp ../Support/Info.plist Branded.plist
 
-          python src/tag_validator.py ${{ steps.vars.outputs.tag }}
           python src/generate_and_download.py
 
           # move the branded project file to the main folder
@@ -93,25 +119,10 @@ jobs:
           ls -la
 
 
-      - name: Set up scheme, version, build_number, and team-id from files
+      - name: Expose kiwix-apple GitHub actions
         run: |
           # move the checked out github actions to root folder:
           mv apple/.github/ .
-          
-          # each of these dot files below contain a single value
-          # and are created by: src/tag_validator.py
-
-          # brand_name comes from the valid tag
-          BRAND=$(<./apple/branded/.brand_name)
-          echo "BRAND=$BRAND" >> $GITHUB_ENV
-
-          # version comes from the tag
-          VERSION=$(<./apple/branded/.version_number)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-          # team_id comes from the brand's json file
-          TEAM_ID=$(<./apple/branded/.team_id)
-          echo "TEAM_ID=$TEAM_ID" >> $GITHUB_ENV
 
       # taken from: kiwix/kiwix-apple .github/workflows/cd.yml
       - name: Set up variables for build
@@ -183,3 +194,27 @@ jobs:
           APPLE_STORE_AUTH_KEY_ID: ${{ secrets.APPLE_STORE_AUTH_KEY_ID }}
           APPLE_STORE_AUTH_KEY_ISSUER_ID: ${{ secrets.APPLE_STORE_AUTH_KEY_ISSUER_ID }}
         run: xcrun xcodebuild -exportArchive -archivePath $PWD/Kiwix-$VERSION.xcarchive -exportPath $PWD/export/ -exportOptionsPlist export.plist -authenticationKeyPath $APPLE_STORE_AUTH_KEY_PATH -allowProvisioningUpdates -authenticationKeyID $APPLE_STORE_AUTH_KEY_ID -authenticationKeyIssuerID $APPLE_STORE_AUTH_KEY_ISSUER_ID
+
+  # Annotate the release when a publication actually failed.
+  report_failure:
+    needs: [prepare, generate_build_deploy]
+    if: >
+      always() && (
+        needs.prepare.result == 'failure' ||
+        needs.generate_build_deploy.result == 'failure'
+      )
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Mark release as failed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          tag_name="${GITHUB_REF_NAME}"
+          body="$(gh release view "$tag_name" --json body -q .body 2>/dev/null || true)"
+          gh release edit "$tag_name" --notes "${body}
+
+          > [!WARNING]
+          > Build failed. See [run ${GITHUB_RUN_ID}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})."

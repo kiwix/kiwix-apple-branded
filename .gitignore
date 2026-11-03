@@ -8,6 +8,8 @@ branded_project_test.yml
 .brand_name
 .build_number
 .version_number
+.team_id
+.kiwix_apple_revision
 
 # this is CI specific
 Brewfile_CI
@@ -20,3 +22,4 @@ pyvenv.cfg
 pixi.lock
 pixi.toml
 .pixi
+.venv
